@@ -126,8 +126,15 @@
     document.addEventListener("DOMContentLoaded", _ => updateConnected());
 
     function updateCanvasSize() {
-      const [w_mm, h_mm, t] = document.getElementById('canvas_size').value.split('x');
+      const sizeValue = document.getElementById('canvas_size').value;
+      const sizeParts = sizeValue.split('x');
 
+      if (sizeParts.length !== 3) {
+        console.error("Invalid canvas size format.");
+        return;
+      }
+
+      const [w_mm, h_mm, t] = sizeParts;
       const canvas = document.getElementById('canvas');
 
       if (canvasFlipXY) {
