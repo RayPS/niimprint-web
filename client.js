@@ -105,32 +105,34 @@ async function niimbotTransceivePacket(type, data, recv_offset = 1) {
 }
 
 async function niimbotConnect() {
-  return navigator.bluetooth.requestDevice(bluetoothOptions).then(device => {
+  try {
+    const device = await navigator.bluetooth.requestDevice(bluetoothOptions);
     log("BT", `Device: ${device.name}`);
     bluetooth["device"] = device;
 
     log("BT", 'Connecting to GATT Server...');
-    return device.gatt.connect();
-  }).then(server => {
+    const server = await device.gatt.connect();
     bluetooth["gatt"] = server;
+
     log("BT", `Getting the ${BLE_THERM_UUID}...`);
-    return server.getPrimaryService(BLE_THERM_UUID);
-  }).then(service => {
+    const service = await server.getPrimaryService(BLE_THERM_UUID);
     bluetooth["service"] = service;
+
     log("BT", `Getting the ${BLE_THERM_CH_UUID}...`);
-    return service.getCharacteristic(BLE_THERM_CH_UUID);
-  }).then(ch => {
+    const ch = await service.getCharacteristic(BLE_THERM_CH_UUID);
     bluetooth["tx"] = ch;
     bluetooth["rx"] = ch;
+
     log("BT", `Listening for notifications...`);
-    return ch.startNotifications();
-  }).then(_ => {
+    await ch.startNotifications();
+
     log("BT", "All done!");
     return bluetooth;
-  }).catch(error => {
-    log("BT", 'Argh! ' + error);
+  } catch (error) {
+    log("BT", 'Connection failed: ' + error);
     bluetooth = {};
-  });
+    throw error; // Re-throw the error to be handled by the caller
+  }
 }
 
 function niimbotDisconnect() {
