@@ -20,7 +20,6 @@
       border-radius: 4px;
     }
     .canvas {
-      /* border: 1px solid black; */
       margin-bottom: 1rem;
       background-color: white;
       border-radius: 4px;
@@ -193,31 +192,36 @@
     });
     function canvasGetImageData(canvas, x, y, w, h, flipXY = false) {
       const context = canvas.getContext("2d");
+      if (!context) {
+        throw new Error("Canvas context is not available.");
+      }
+
       const image = context.getImageData(x, y, w, h);
+      if (!image || !image.data) {
+        throw new Error("Failed to get image data from canvas.");
+      }
 
       let data = [];
 
       if (flipXY) {
         for (let x = 0; x < image.width; x++) {
           for (let y = image.height; y-- > 0; ) {
-            var off = (y * image.width + x) * 4;
-            const gray = (image.data[off] + image.data[off+1] + image.data[off+2]) / 3;
-            const alpha = (image.data[off+3]);
+            const off = (y * image.width + x) * 4;
+            const gray = (image.data[off] + image.data[off + 1] + image.data[off + 2]) / 3;
+            const alpha = image.data[off + 3];
             data.push(gray > 128 || alpha < 128 ? 0 : 1);
           }
         }
-
         return [data, image.height, image.width];
       } else {
         for (let y = 0; y < image.height; y++) {
           for (let x = 0; x < image.width; x++) {
-            var off = (y * image.width + x) * 4;
-            const gray = (image.data[off] + image.data[off+1] + image.data[off+2]) / 3;
-            const alpha = (image.data[off+3]);
+            const off = (y * image.width + x) * 4;
+            const gray = (image.data[off] + image.data[off + 1] + image.data[off + 2]) / 3;
+            const alpha = image.data[off + 3];
             data.push(gray > 128 || alpha < 128 ? 0 : 1);
           }
         }
-
         return [data, image.width, image.height];
       }
     }
