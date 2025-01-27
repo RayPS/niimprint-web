@@ -78,6 +78,7 @@
     <button id="clear_canvas">Clear</button>
     <button id="draw_pattern">Pattern</button>
     <button id="save_canvas">Save</button>
+    <button id="paste_canvas">Paste</button>
     <button id="print" class="on_connected">Print</button>
   </div>
   <p id="warning"></p>
@@ -244,6 +245,13 @@
     document.getElementById('save_canvas').addEventListener('click', function() {
       const canvas = document.getElementById('canvas');
       localStorage.setItem("canvas", canvas.toDataURL());
+    });
+    document.getElementById('paste_canvas').addEventListener('click', function() {
+      if (navigator.userAgent.indexOf("Mac") != -1) {
+        alert("Select canvas, ⌘V")
+      } else {
+        alert("Select canvas, Ctrl+V")
+      }
     });
     document.getElementById('print').addEventListener('click', async function() {
       const canvas = document.getElementById('canvas');
