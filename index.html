@@ -97,6 +97,16 @@
   <script>
     const canvasFlipXY = true;
 
+    function niimbotDisconnect() {
+      if (bluetooth["rx"]) {
+        bluetooth["rx"].stopNotifications();
+      }
+      if (bluetooth["gatt"]) {
+        bluetooth["gatt"].disconnect();
+      }
+      bluetooth = {};
+    }
+
     function updateConnected(deviceName = null) {
       for (let el of document.getElementsByClassName("on_connected")) {
         el.disabled = !deviceName;
