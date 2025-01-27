@@ -5,12 +5,35 @@
   <script src="cmds.js"></script>
   <script src="canvas.js"></script>
   <style>
+    * {
+      font-family:'Courier New', Courier, monospace;
+      box-sizing: border-box;
+    }
     .on_connected {
     }
     .disabled {
     }
+    .canvas_container {
+      background-color: hsl(0, 0%, 94%);
+      padding: 1rem;
+      display: inline-block;
+      border-radius: 4px;
+    }
     .canvas {
-      border: 2px solid black;
+      /* border: 1px solid black; */
+      margin-bottom: 1rem;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 4px 8px -4px hsla(0, 0%, 0%, 0.16);
+    }
+    .canvas:focus {
+      outline: none;
+      box-shadow: 0 0 1px 0 hsla(0, 0%, 0%, 1), 0 4px 8px -4px hsla(0, 0%, 0%, 0.16);
+    }
+    #warning {
+      font-size: small;
+      white-space: pre;
+      color: orangered;
     }
   </style>
 </head>
@@ -29,7 +52,7 @@
   <hr>
   <h3>Response:</h3>
   <p>
-    <textarea id="response" cols="100" rows="10"></textarea>
+    <textarea id="response" cols="100" rows="10" readonly></textarea>
   </p>
   <hr>
   <h3>
@@ -49,21 +72,23 @@
       <option value="13">13</option>
       <option value="15">15</option>
     </select>
+  </h3>
+  <div class="canvas_container">
+    <canvas id="canvas" width="0" height="0" class="canvas" tabindex="0"></canvas>
+    <br>
     <button id="clear_canvas">Clear</button>
     <button id="draw_pattern">Pattern</button>
     <button id="save_canvas">Save</button>
     <button id="print" class="on_connected">Print</button>
-  </h3>
-  <p>
-    <canvas id="canvas" width="0" height="0" class="canvas"></canvas>
-  </p>
+  </div>
+  <p id="warning"></p>
   <hr>
   <h3>
     Log:
     <button id="clear_log">Clear</button>
   </h3>
   <p>
-    <textarea id="log" cols="100" rows="10"></textarea>
+    <textarea id="log" cols="100" rows="10" readonly></textarea>
   </p>
   <hr>
   <p>
@@ -84,7 +109,8 @@
 
       const deviceNameEl = document.getElementById('device_name');
       if (deviceNameEl) {
-        deviceNameEl.textContent = deviceName ? toResponseString(deviceName) : 'Disconnected';
+        const deviceStatus = `<i style="color: ${deviceName ? 'green' :'red'}">&#9673;</i> `
+        deviceNameEl.innerHTML = deviceStatus + (deviceName ? toResponseString(deviceName) : 'Disconnected');
       }
     }
 
@@ -106,7 +132,7 @@
       }
 
       const canvas_label = document.getElementById('canvas_label');
-      canvas_label.textContent = `${canvas.width}x${canvas.height}T${T}`;
+      canvas_label.textContent = `${canvas.width}x${canvas.height}`;
     }
 
     document.addEventListener("DOMContentLoaded", updateCanvasSize);
@@ -142,6 +168,7 @@
       const context = canvas.getContext('2d');
       context.setTransform(1, 0, 0, 1, 0, 0);
       context.clearRect(0, 0, canvas.width, canvas.height);
+      document.getElementById('warning').textContent = "";
     });
     document.getElementById('draw_pattern').addEventListener('click', async function() {
       const canvas = document.getElementById('canvas');

@@ -9,7 +9,7 @@ var offsetY;
 
 document.addEventListener("DOMContentLoaded", _ => {
   canvas = document.getElementById('canvas');
-  canvasContext = canvas.getContext('2d');
+  canvasContext = canvas.getContext('2d', { willReadFrequently: true });
 
   canvas.addEventListener('touchstart', handleStart);
   canvas.addEventListener('touchend', handleEnd);
@@ -37,6 +37,8 @@ document.addEventListener("DOMContentLoaded", _ => {
       isDrawing = false;
     }
   });
+
+  document.addEventListener('paste', handlePaste);
 });
 
 const ongoingTouches = [];
@@ -122,4 +124,41 @@ function drawLine(canvasContext, x1, y1, x2, y2) {
 function clearArea() {
   canvasContext.setTransform(1, 0, 0, 1, 0, 0);
   canvasContext.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+}
+
+function hasColor () {
+  const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height).data;
+  for (let i = 0; i < imageData.length; i += 4) {
+    const [r, g, b] = imageData.slice(i, i + 3);
+    const [max, min] = [Math.max(r, g, b), Math.min(r, g, b)];
+    if (max === min) continue;
+    if (max - min < 10) continue;
+    return true;
+  }
+  return false;
+}
+
+function createWarning ({size, color}) {
+  const warning = document.getElementById('warning');
+  warning.textContent = '';
+  if (size) warning.textContent += '\nWarning: The size of the pasted image is mismatched.';
+  if (color) warning.textContent += '\nWarning: The pasted image contains colors.';
+}
+
+function handlePaste(evt) {
+  const imageItem = Array.from(evt.clipboardData.items).find(item => item.type.includes("image"));
+  const image = new Image();
+  image.onload = () => {
+    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+    canvasContext.drawImage(image, 0, 0, canvas.width, canvas.height);
+    createWarning({
+      size: image.width !== canvas.width || image.height !== canvas.height,
+      color: hasColor()
+    })
+  };
+  if (imageItem) {
+    image.src = URL.createObjectURL(imageItem.getAsFile());
+  } else {
+    console.warn("Clipboard does not contain image");
+  }
 }
